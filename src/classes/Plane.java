@@ -12,8 +12,12 @@ public class Plane
 	private Geolocation geolocation;
 	private boolean grounded;
 	
-	public Plane(Geolocation geolocation,float height, float speedX, float speedY,
-			float direction, float horodatageSpeed, float horodatageGeolocation, boolean grounded) 
+	public Plane()
+	{
+		
+	}
+	public Plane(Geolocation geolocation,float height, float speedX,float direction, 
+		  float horodatageGeolocation,float horodatageSpeed,float speedY, boolean grounded) 
 	{
 		this.height=height;
 		this.speedX=speedX;
@@ -23,6 +27,19 @@ public class Plane
 		this.horodatageSpeed=horodatageSpeed;
 		this.grounded=grounded;
 		this.geolocation=geolocation;
+	}
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() 
+	{
+		return "Plane [height=" + height + ", speedX=" + speedX + ", speedY=" + speedY + ", direction=" + direction
+				+ ", horodatageSpeed=" + horodatageSpeed + ", horodatageGeolocalisation=" + horodatageGeolocalisation
+				+ ", geolocation=" + geolocation + ", grounded=" + grounded + "]";
 	}
 
 	/**
