@@ -14,13 +14,18 @@ public class Controller
 {	
 	private ArrayList<Flight> flights=new ArrayList<Flight>();
 	private ArrayList<Airport> airports=new ArrayList<Airport>();
+	private long t0;
+	private long currentTime = 0;
 	
 	public Controller() 
 	{
 		getAirportData("src/Data/airports.dat");
 		getFlightData("src/Data/flights.dat"); 
-		getRealTimeFlightsData("src/Data/realtime_flights.dat");
+		getT0("src/Data/realtime_flights.dat");
+		updateRealTimeFlightsData("src/Data/realtime_flights.dat");
 	}
+	
+	
 	
 	public void getAirportData(String path) 
 	{
@@ -28,15 +33,16 @@ public class Controller
 		{
 			FileReader file=new FileReader(path);
 			BufferedReader bufRead = new BufferedReader(file);
-				
+
 			String line= bufRead.readLine();
+			
 			
 			while(line != null)
 			{
 				String[] array = line.split("///");
 				float lon= Float.parseFloat(array[3]);
 				float lat = Float.parseFloat(array[4]);
-				airports.add(new Airport(new Geolocation(lon,lat),array[0],array[1],array[2]));				
+				airports.add(new Airport(new Geolocation(lon,lat,0),array[0],array[1],array[2]));				
 				line = bufRead.readLine();
 			}
 			
@@ -48,11 +54,34 @@ public class Controller
 			e.printStackTrace();
 		}
 	}
+	
+	
+	public void getT0(String path)
+	{
+		try 
+		{
+			FileReader file=new FileReader(path);
+			BufferedReader bufRead = new BufferedReader(file);
+				
+			String line= bufRead.readLine();
+			String[] firstLine = line.split("///");
+			
+			this.t0 = Long.parseLong(firstLine[0]);
+			
+			bufRead.close();
+			file.close();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * 
 	 * @param path
 	 */
-	public void getRealTimeFlightsData(String path) 
+	public void updateRealTimeFlightsData(String path) 
 	{
 
 		try 
@@ -62,42 +91,53 @@ public class Controller
 				
 			String line= bufRead.readLine();
 			
-			while(line != null)
-			{
+			
+			
+			
 				String[] array = line.split("///");
 				
-				
-				try
+				while(line != null)
 				{
-					BigInteger realTime = BigInteger.parseBigInteger(array[0]);
-					float lon= Float.parseFloat(array[2]);
-					float lat = Float.parseFloat(array[3]);
-					float height = Float.parseFloat(array[4]);
-					float speedX = Float.parseFloat(array[5]);
-					float direction = Float.parseFloat(array[6]);
-					float horodatageLocation = Float.parseFloat(array[7]);
-					float horodatageSpeed = Float.parseFloat(array[8]);
-					float speedY = Float.parseFloat(array[9]);
-					boolean grounded = Boolean.parseBoolean(array[10]);
-					Plane tempPlane=new Plane(new Geolocation(lon,lat),height,speedX,
-							direction,horodatageLocation,horodatageSpeed,speedY,grounded);
-					for(Flight f: flights)
+					try
 					{
-						if(f.getId().equals(array[1].trim()))
+						if(currentTime >= Long.parseLong(array[0]) - t0) 
 						{
-							f.setRealTime(array[0]);
-							f.setPlane(tempPlane);
+							float lon= Float.parseFloat(array[2]);
+							float lat = Float.parseFloat(array[3]);
+							float height = Float.parseFloat(array[4]);
+							float speedX = Float.parseFloat(array[5]);
+							float direction = Float.parseFloat(array[6]);
+							float horodatageLocation = Float.parseFloat(array[7]);
+							float horodatageSpeed = Float.parseFloat(array[8]);
+							float speedY = Float.parseFloat(array[9]);
+							boolean grounded = Boolean.parseBoolean(array[10]);
+							for(Flight f: flights)
+							{
+								if(f.getId().equals(array[1].trim()))
+								{
+									f.setRealTime(currentTime - t0);
+									f.getPlane().getGeolocation().setHeight(height);
+									f.getPlane().getGeolocation().setLatitude(lat);
+									f.getPlane().getGeolocation().setLongitude(lon);
+									f.getPlane().setSpeedX(speedX);
+									f.getPlane().setSpeedY(speedY);
+									f.getPlane().setHorodatageGeolocalisation(horodatageLocation);
+									f.getPlane().setHorodatageSpeed(horodatageSpeed);
+									f.getPlane().setDirection(direction);
+									f.getPlane().setGrounded(grounded);
+								}
+							}
 						}
 					}
-				}
-				catch(NumberFormatException e)
-				{
-
-
+					catch(NumberFormatException e)
+					{
+						System.err.println("Données erronées");
+						
+					}
+					
+					line = bufRead.readLine();
 				}
 				
-				line = bufRead.readLine();
-			}
 			
 			bufRead.close();
 			file.close();
@@ -106,6 +146,11 @@ public class Controller
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	public void incrementCurrentTime(long nb)
+	{
+		this.currentTime += nb;
 	}
 	
 	/**
@@ -158,6 +203,24 @@ public class Controller
 		{
 			System.out.println(f.toString());
 			System.out.println(f.getPlane().toString());
+		}
+		
+		while(true)
+		{
+			c.incrementCurrentTime(60000);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			c.updateRealTimeFlightsData("src/Data/realtime_flights.dat");
+			
+			for(Flight f : c.flights)
+			{
+				System.out.println(f.toString());
+				System.out.println(f.getPlane().toString());
+			}
 		}
 	}
 }

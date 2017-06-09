@@ -11,11 +11,14 @@ public class Geolocation
 {
 	private float latitude;
 	private float longitude;
+	private float height;
+
 	
-	public Geolocation(float longitude,float latitude) 
+	public Geolocation(float longitude,float latitude, float height) 
 	{
 		this.latitude=latitude;
 		this.longitude=longitude;
+		this.height = height;
 		// TODO Auto-generated constructor stub
 	}
 
@@ -38,6 +41,21 @@ public class Geolocation
 	{
 		this.longitude = longitude;
 	}
+
+	/**
+	 * @return the height
+	 */
+	public float getHeight() {
+		return height;
+	}
+
+	/**
+	 * @param height the height to set
+	 */
+	public void setHeight(float height) {
+		this.height = height;
+	}
+	
 	
 
 }

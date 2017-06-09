@@ -1,6 +1,6 @@
 package classes;
 
-import java.math.BigInteger;
+import java.util.ArrayList;
 
 public class Flight 
 {
@@ -11,6 +11,8 @@ public class Flight
 	private String company;
 	private String id;
 	private long realTime;
+	private ArrayList<Geolocation> path = new ArrayList<Geolocation>();
+
 	
 	public Flight(String id, Airport a1, Airport a2, String company, String model, Plane plane) 
 	{
