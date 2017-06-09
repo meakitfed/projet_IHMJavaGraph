@@ -17,6 +17,13 @@ public class Controller
 	private long t0;
 	private long currentTime = 0;
 	
+	
+	/**
+	 * 
+	 * constructeur du du controller
+	 * 
+	 * initialise les arraylist d'aeroports et vols
+	 */
 	public Controller() 
 	{
 		getAirportData("src/Data/airports.dat");
@@ -94,14 +101,15 @@ public class Controller
 			
 			
 			
-				String[] array = line.split("///");
 				
 				while(line != null)
 				{
+					String[] array = line.split("///");
 					try
 					{
-						if(currentTime >= Long.parseLong(array[0]) - t0) 
+						if(currentTime >= (Long.parseLong(array[0]) - t0) )
 						{
+							//System.out.println("\n\n\n\nvol : "+ array[1]+"\n\n\n");
 							float lon= Float.parseFloat(array[2]);
 							float lat = Float.parseFloat(array[3]);
 							float height = Float.parseFloat(array[4]);
@@ -194,33 +202,27 @@ public class Controller
 	public static void main(String[] args)
 	{
 		Controller c =new Controller();
-		for(Airport a : c.airports)
-		{
-			System.out.println(a.toString());
+		
+		System.out.println(c.t0);
+		c.incrementCurrentTime(60000);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-
+		c.updateRealTimeFlightsData("src/Data/realtime_flights.dat");
+			
 		for(Flight f : c.flights)
 		{
-			System.out.println(f.toString());
 			System.out.println(f.getPlane().toString());
-		}
-		
-		while(true)
-		{
-			c.incrementCurrentTime(60000);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			c.updateRealTimeFlightsData("src/Data/realtime_flights.dat");
 			
-			for(Flight f : c.flights)
-			{
-				System.out.println(f.toString());
-				System.out.println(f.getPlane().toString());
-			}
+		}
+		c.updateRealTimeFlightsData("src/Data/realtime_flights.dat");
+		System.out.println("hey");
+		for(Flight f : c.flights)
+		{
+			System.out.println(f.getPlane().toString());
+			
 		}
 	}
 }
