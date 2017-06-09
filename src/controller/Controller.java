@@ -109,7 +109,6 @@ public class Controller
 					{
 						if(currentTime >= (Long.parseLong(array[0]) - t0) )
 						{
-							//System.out.println("\n\n\n\nvol : "+ array[1]+"\n\n\n");
 							float lon= Float.parseFloat(array[2]);
 							float lat = Float.parseFloat(array[3]);
 							float height = Float.parseFloat(array[4]);
@@ -154,6 +153,59 @@ public class Controller
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	
+	/**
+	 * Cherche le vol d'id entré en parametre dans l'arrayist flights
+	 * 
+	 * @param id id du vol recherché
+	 * @return le vol recherche ou null si ce vol n'est pas dans la liste
+	 */
+	public Flight getFlightByID(String id)
+	{
+		Flight toReturn = null;
+		
+		for (Flight f : flights)
+		{
+			if (f.getId().equals(id))
+			{
+				toReturn = f;
+			}
+		}
+		
+		return toReturn;
+	}
+	
+	
+	/**
+	 * returne un tableau de taille 2 contenant le nom du pays de depart et arrivee du vol
+	 * @param f le vol
+	 * @return tableau de string
+	 */
+	public String[] printCountriesOfFlight(Flight f)
+	{
+		String[] toReturn = new String[2];
+		
+		toReturn[0] = f.getDeparture().getCountry();
+		toReturn[1] = f.getArrival().getCountry();
+		
+		return toReturn;
+	}
+	
+	/**
+	 * returne un tableau de taille 2 contenant les noms de la ville de depart et arrivee du vol
+	 * @param f le vol
+	 * @return tableau de string
+	 */
+	public String[] printCitiesOfFlight(Flight f)
+	{
+		String[] toReturn = new String[2];
+		
+		toReturn[0] = f.getDeparture().getCityName();
+		toReturn[1] = f.getArrival().getCityName();
+		
+		return toReturn;
 	}
 	
 	public void incrementCurrentTime(long nb)
