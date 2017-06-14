@@ -32,6 +32,36 @@ public class Flight
 		str+= "vol numéro "+id+" au bord d'un " + modelAvion +" appartenant a la compagnie "+company+" qui va de : "+ departure.getShortName() +" à "+arrival.getShortName(); 
 		return str;
 	}
+	
+	/**
+	 * returne un tableau de taille 2 contenant le nom du pays de depart et arrivee du vol
+	 * @param f le vol
+	 * @return tableau de string
+	 */
+	public String[] printCountriesOfFlight()
+	{
+		String[] toReturn = new String[2];
+		
+		toReturn[0] = getDeparture().getCountry();
+		toReturn[1] = getArrival().getCountry();
+		
+		return toReturn;
+	}
+	
+	/**
+	 * returne un tableau de taille 2 contenant les noms de la ville de depart et arrivee du vol
+	 * @param f le vol
+	 * @return tableau de string
+	 */
+	public String[] printCitiesOfFlight()
+	{
+		String[] toReturn = new String[2];
+		
+		toReturn[0] = getDeparture().getCityName();
+		toReturn[1] = getArrival().getCityName();
+		
+		return toReturn;
+	}
 
 	/**
 	 * @return the arrival

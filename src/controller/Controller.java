@@ -16,6 +16,7 @@ public class Controller
 	private ArrayList<Airport> airports=new ArrayList<Airport>();
 	private long t0;
 	private long currentTime = 0;
+	private String realTimeFile = "src/Data/realtime_flights.dat";
 	
 	
 	/**
@@ -29,7 +30,7 @@ public class Controller
 		getAirportData("src/Data/airports.dat");
 		getFlightData("src/Data/flights.dat"); 
 		getT0("src/Data/realtime_flights.dat");
-		updateRealTimeFlightsData("src/Data/realtime_flights.dat");
+		updateRealTimeFlightsData("src/Data/realtime_flights.dat", t0);
 	}
 	
 	
@@ -84,11 +85,58 @@ public class Controller
 		}
 	}
 	
+	
+	
+	public long getLastUpdateTime(String path)
+	{
+		try 
+		{
+			FileReader file=new FileReader(path);
+			BufferedReader bufRead = new BufferedReader(file);
+			long lastTime = t0;
+
+			String line= bufRead.readLine();
+			
+			
+			while(line != null)
+			{
+				String[] array = line.split("///");
+							
+				if( (Long.parseLong(array[0]) - t0) == currentTime)
+				{
+					bufRead.close();
+					return currentTime;
+				}
+				else if((Long.parseLong(array[0]) - t0)  > currentTime)
+				{
+					bufRead.close();
+					return lastTime;
+				}
+				
+				lastTime = Long.parseLong(array[0]);	
+					
+				line = bufRead.readLine();
+			}
+			
+			bufRead.close();
+			file.close();
+			
+			return lastTime;
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		return currentTime;
+	}
+	
 	/**
 	 * 
-	 * @param path
+	 * update les données des vols avec les données 
+	 * 
+	 * @param path vers le fichier
 	 */
-	public void updateRealTimeFlightsData(String path) 
+	public void updateRealTimeFlightsData(String path, long time) 
 	{
 
 		try 
@@ -99,52 +147,49 @@ public class Controller
 			String line= bufRead.readLine();
 			
 			
-			
-			
-				
-				while(line != null)
+			while(line != null)
+			{
+				String[] array = line.split("///");
+				try
 				{
-					String[] array = line.split("///");
-					try
+					if(time == (Long.parseLong(array[0])))
 					{
-						if(currentTime >= (Long.parseLong(array[0]) - t0) )
+						System.out.println("trouvé");
+						float lon= Float.parseFloat(array[2]);
+						float lat = Float.parseFloat(array[3]);
+						float height = Float.parseFloat(array[4]);
+						float speedX = Float.parseFloat(array[5]);
+						float direction = Float.parseFloat(array[6]);
+						float horodatageLocation = Float.parseFloat(array[7]);
+						float horodatageSpeed = Float.parseFloat(array[8]);
+						float speedY = Float.parseFloat(array[9]);
+						boolean grounded = Boolean.parseBoolean(array[10]);
+						for(Flight f: flights)
 						{
-							float lon= Float.parseFloat(array[2]);
-							float lat = Float.parseFloat(array[3]);
-							float height = Float.parseFloat(array[4]);
-							float speedX = Float.parseFloat(array[5]);
-							float direction = Float.parseFloat(array[6]);
-							float horodatageLocation = Float.parseFloat(array[7]);
-							float horodatageSpeed = Float.parseFloat(array[8]);
-							float speedY = Float.parseFloat(array[9]);
-							boolean grounded = Boolean.parseBoolean(array[10]);
-							for(Flight f: flights)
+							if(f.getId().equals(array[1].trim()))
 							{
-								if(f.getId().equals(array[1].trim()))
-								{
-									f.setRealTime(currentTime - t0);
-									f.getPlane().getGeolocation().setHeight(height);
-									f.getPlane().getGeolocation().setLatitude(lat);
-									f.getPlane().getGeolocation().setLongitude(lon);
-									f.getPlane().setSpeedX(speedX);
-									f.getPlane().setSpeedY(speedY);
-									f.getPlane().setHorodatageGeolocalisation(horodatageLocation);
-									f.getPlane().setHorodatageSpeed(horodatageSpeed);
-									f.getPlane().setDirection(direction);
-									f.getPlane().setGrounded(grounded);
-								}
+								f.setRealTime(currentTime - t0);
+								f.getPlane().getGeolocation().setHeight(height);
+								f.getPlane().getGeolocation().setLatitude(lat);
+								f.getPlane().getGeolocation().setLongitude(lon);
+								f.getPlane().setSpeedX(speedX);
+								f.getPlane().setSpeedY(speedY);
+								f.getPlane().setHorodatageGeolocalisation(horodatageLocation);
+								f.getPlane().setHorodatageSpeed(horodatageSpeed);
+								f.getPlane().setDirection(direction);
+								f.getPlane().setGrounded(grounded);
 							}
 						}
 					}
-					catch(NumberFormatException e)
-					{
-						System.err.println("Données erronées");
-						
-					}
+				}
+				catch(NumberFormatException e)
+				{
+					System.err.println("Données erronées");
+					
+				}
 					
 					line = bufRead.readLine();
-				}
-				
+			}
 			
 			bufRead.close();
 			file.close();
@@ -179,31 +224,85 @@ public class Controller
 	
 	
 	/**
-	 * returne un tableau de taille 2 contenant le nom du pays de depart et arrivee du vol
-	 * @param f le vol
-	 * @return tableau de string
+	 * 
+	 * @param country destination
+	 * @return un arraylist contenant les vols allant a country
 	 */
-	public String[] printCountriesOfFlight(Flight f)
+	public ArrayList<Flight> getFlightsGoingTo(String country)
 	{
-		String[] toReturn = new String[2];
+		ArrayList<Flight> toReturn = new ArrayList<Flight>();
 		
-		toReturn[0] = f.getDeparture().getCountry();
-		toReturn[1] = f.getArrival().getCountry();
+		for (Flight f : flights)
+		{
+			if (f.getArrival().getCountry().equals(country))
+			{
+				toReturn.add(f);
+			}
+			
+		}
 		
 		return toReturn;
 	}
 	
 	/**
-	 * returne un tableau de taille 2 contenant les noms de la ville de depart et arrivee du vol
-	 * @param f le vol
-	 * @return tableau de string
+	 * 
+	 * @param a destination aeroport
+	 * @return un arraylist contenant les vols allant a a
 	 */
-	public String[] printCitiesOfFlight(Flight f)
+	public ArrayList<Flight> getFlightsGoingTo(Airport a)
 	{
-		String[] toReturn = new String[2];
+		ArrayList<Flight> toReturn = new ArrayList<Flight>();
 		
-		toReturn[0] = f.getDeparture().getCityName();
-		toReturn[1] = f.getArrival().getCityName();
+		for (Flight f : flights)
+		{
+			if (f.getArrival() == a) //attention ?
+			{
+				toReturn.add(f);
+			}
+			
+		}
+		
+		return toReturn;
+	}
+	
+	/**
+	 * 
+	 * @param country depart
+	 * @return un arraylist contenant les vols venant de country
+	 */
+	public ArrayList<Flight> getFlightsFrom(String country)
+	{
+		ArrayList<Flight> toReturn = new ArrayList<Flight>();
+		
+		for (Flight f : flights)
+		{
+			if (f.getDeparture().getCountry().equals(country))
+			{
+				toReturn.add(f);
+			}
+			
+		}
+		
+		return toReturn;
+	}
+	
+	/**
+	 * 
+	 * @param a depart
+	 * @return un arraylist contenant les vols venant de a
+	 */
+	public ArrayList<Flight> getFlightGoingTo(Airport a)
+	{
+		ArrayList<Flight> toReturn = new ArrayList<Flight>();
+		
+		for (Flight f : flights)
+		{
+			if (f.getDeparture() == a)
+			{
+				toReturn.add(f);
+			}
+			
+		}
 		
 		return toReturn;
 	}
@@ -255,26 +354,16 @@ public class Controller
 	{
 		Controller c =new Controller();
 		
-		System.out.println(c.t0);
-		c.incrementCurrentTime(60000);
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		c.updateRealTimeFlightsData("src/Data/realtime_flights.dat");
-			
+		System.out.println("t0 : "+c.t0);
+		System.out.println("current time : "+c.currentTime);
+	
+		c.incrementCurrentTime(100000);
+		
+		c.updateRealTimeFlightsData(c.realTimeFile, c.getLastUpdateTime(c.realTimeFile));
 		for(Flight f : c.flights)
 		{
+			System.out.println(f.getId());
 			System.out.println(f.getPlane().toString());
-			
-		}
-		c.updateRealTimeFlightsData("src/Data/realtime_flights.dat");
-		System.out.println("hey");
-		for(Flight f : c.flights)
-		{
-			System.out.println(f.getPlane().toString());
-			
 		}
 	}
 }

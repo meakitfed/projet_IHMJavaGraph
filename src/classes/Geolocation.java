@@ -55,6 +55,15 @@ public class Geolocation
 	public void setHeight(float height) {
 		this.height = height;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Geolocation [latitude=" + latitude + ", longitude=" + longitude + ", height=" + height + "]";
+	}
+	
 	
 	
 
